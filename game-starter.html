@@ -1,0 +1,165 @@
+<html><head><script>
+
+function step(){
+
+	if(jumpTimer == null){
+		stepNumber++
+		stepNumber = stepNumber % 30
+
+		if(walkingDirectionRight){
+			alien.src="alien/alienrwalk" + stepNumber + ".gif"
+		}
+		else{
+			alien.src="alien/alienlwalk" + stepNumber + ".gif"
+		}
+	}
+}
+
+function move(){
+	box = document.images[1];
+	largeBox = document.images[2];
+
+	step()
+
+	alienPosition = parseInt(alien.style.left);
+	boxPosition = parseInt(box.style.left);
+	boxDistance = boxPosition - alienPosition; //distance btwn smallbox and alien
+	topOfBox = parseInt(box.style.top) - box.height; //distance the top of the screen and top of the box
+	
+
+	alien.style.left = parseInt(alien.style.left) + velocityX + "px";
+	
+	boxKicked();
+	boom();
+
+	/* reusing variables for largeBox*/
+
+	boxPosition = parseInt(largeBox.style.left);
+	boxDistance = boxPosition - alienPosition;
+	topOfBox = parseInt(largeBox.style.top) - largeBox.height;
+
+		BigBox();
+		windowRange();
+}
+
+function Jump() {
+
+alienDistanceY = parseInt(alien.style.top);
+
+if (alienDistanceY <=0) {
+	velocityY = 1;
+}
+
+if(alienDistanceY > 200){
+	velocityY = -1;
+	clearInterval(jumpTimer);
+	jumpTimer = null;
+}
+
+alien.style.top = parseInt(alien.style.top) + velocityY + "px";
+
+}
+
+function boxKicked() {
+
+	//alien.width * 0.85 is width of the alien
+
+	if((alienPosition < (boxPosition)) 
+	&& (parseInt(alien.style.top) >= topOfBox)
+	&&  (boxDistance <= alien.width * 0.85)) {
+
+		box.style.left = parseInt(box.style.left) + 150 + "px";
+
+	}
+
+}
+
+function windowRange() {//keeps alien inside the window
+
+	alienRight = window.innerWidth - alien.width - parseInt(alien.style.left); //distance btwn rightside of the screen and the alien
+
+	alienLeft = parseInt(alien.style.left);//distance btwn leftside of the screen and the alien
+
+	if(alienRight <= 0){
+		velocityX = -1;
+		walkingDirectionRight = false;
+	}
+	
+	if(alienLeft <= 0){
+		walkingDirectionRight = true;
+		velocityX = 1;
+	}
+}
+
+function BigBox() {
+
+	if((alienPosition < (boxPosition)) 
+	&& (parseInt(alien.style.top) >= topOfBox)
+	&&  (boxDistance <= alien.width * 0.85)) {
+		walkingDirectionRight = false
+		velocityX = -1;
+	}
+}
+
+function boom() {
+
+if((parseInt(alien.style.top) >= topOfBox - 5 )
+&& (boxDistance <= alien.width * 0.85) 
+&& (alienPosition < (boxPosition + box.width))
+&& parseInt(alien.style.top) <= topOfBox + 5){
+	boxes = document.getElementsByClassName("box")
+	boxes[0].src = "/boom.png";
+
+	setTimeout(disappear, 3000);
+
+	}
+}
+
+
+function disappear(){
+	boxes = document.getElementsByClassName("box")
+	boxes[0].style.display = "none";
+	boxes[0].style.zIndex = "0";
+}
+
+onload = function () {
+
+	walkTimer  = null;
+	
+	jumpTimer = null;
+	stepNumber = 0
+	velocityY = -1;
+	velocityX = 1;
+	walkingDirectionRight = true;
+
+	alien = document.images[0];
+
+	alien.onclick = function(){
+	
+		if(walkTimer == null  ){
+			walkTimer = setInterval(move, 15);
+		}
+		else if(jumpTimer ==null) {
+			clearInterval(walkTimer);
+			walkTimer = null;
+		}	
+	}
+
+	alien.onmouseover = function () {
+		
+		if (jumpTimer == null && walkTimer) {
+			jumpTimer = setInterval(Jump, 15);
+		} 
+	}
+}
+
+</script>
+</head>
+<body>
+<img src="alien/alienrwalk0.gif" id="x" style="position:absolute; left:0px; top:200px">
+<img class="box" src="/box.png" alt="box" width="50px" style="position: absolute; left: 400px; top:235px;">
+<img class="box" src="/box.png" alt="box" width="100px" style="position: absolute; left: 600px; top:190px;">
+<img src="/boom.PNG" alt="boom" width= "150px" style="position: absolute; left:275px; top:180px; display: none;">
+
+</body>
+</html>
