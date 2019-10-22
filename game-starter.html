@@ -2,7 +2,7 @@
 
 function step(){
 
-	if(jumpTimer == null){
+	if(jumpTimer == null){//stop walk in the air
 		stepNumber++
 		stepNumber = stepNumber % 30
 
@@ -20,13 +20,22 @@ function move(){
 	largeBox = document.images[2];
 
 	step()
-
+	
 	alienPosition = parseInt(alien.style.left);
 	boxPosition = parseInt(box.style.left);
 	boxDistance = boxPosition - alienPosition; //distance btwn smallbox and alien
-	topOfBox = parseInt(box.style.top) - box.height; //distance the top of the screen and top of the box
-	
+	topOfBox = parseInt(box.style.top);//top of the box
+	boxWidth = boxPosition + box.width;
+	bottomOfAlien = parseInt(alien.style.top) + alien.height; //200px + 96px;
 
+	//console.log(boxPosition);//400px
+	//console.log(alienPosition);//0px
+	//console.log(boxDistance);//400px--
+	//console.log(parseInt(box.style.top));//235px
+	// console.log(topOfBox);//235px
+	//console.log(alien.style.top);//200px
+	// console.log(doNotMove);
+	
 	alien.style.left = parseInt(alien.style.left) + velocityX + "px";
 	
 	boxKicked();
@@ -44,35 +53,57 @@ function move(){
 
 function Jump() {
 
-alienDistanceY = parseInt(alien.style.top);
+	alienDistanceY = parseInt(alien.style.top);
 
-if (alienDistanceY <=0) {
-	velocityY = 1;
-}
+	if (alienDistanceY <=0) {
+		velocityY = 1;
+	}
 
-if(alienDistanceY > 200){
-	velocityY = -1;
-	clearInterval(jumpTimer);
-	jumpTimer = null;
-}
+	if(alienDistanceY > 200){
+		velocityY = -1;
+		clearInterval(jumpTimer);
+		jumpTimer = null;
+	}
 
-alien.style.top = parseInt(alien.style.top) + velocityY + "px";
+	alien.style.top = parseInt(alien.style.top) + velocityY + "px";
 
 }
 
 function boxKicked() {
 
-	//alien.width * 0.85 is width of the alien
+	//alien.width * 0.75 & alien.width * 0.3 reduced alien width to go closer the box
+	//if alien its below than the height of the box will be kicked
+	//if distance is closed to zero, the box will be kicked
 
-	if((alienPosition < (boxPosition)) 
-	&& (parseInt(alien.style.top) >= topOfBox)
-	&&  (boxDistance <= alien.width * 0.85)) {
+	if((bottomOfAlien > (topOfBox + 25)) && (boxDistance) > 0 ) { 
 
-		box.style.left = parseInt(box.style.left) + 150 + "px";
-
+		if((boxDistance) < alien.width * 0.75 && boom() && doNotMove){
+			box.style.left = parseInt(box.style.left) + 150 + "px";
+		}
 	}
 
+	if((bottomOfAlien > (topOfBox + 25)) && (boxDistance) < 0) { 
+
+		if((boxDistance) > (-alien.width * 0.3) && doNotMove){
+			box.style.left = (parseInt(box.style.left) - box.width) - 150 + "px";
+		}
+	}
 }
+
+function boom() {
+
+	boxes = document.getElementsByClassName("box");
+
+	if((bottomOfAlien >= topOfBox) && ((boxDistance) < alien.width * 0.6) && (alienPosition <= boxPosition && (alienPosition + alien.width >= boxWidth))){ 
+		boxes[0].src = "boom.png";
+
+		setTimeout(disappear, 1000);
+		
+		doNotMove = false;
+
+	}
+}
+
 
 function windowRange() {//keeps alien inside the window
 
@@ -93,53 +124,36 @@ function windowRange() {//keeps alien inside the window
 
 function BigBox() {
 
-	if((alienPosition < (boxPosition)) 
-	&& (parseInt(alien.style.top) >= topOfBox)
-	&&  (boxDistance <= alien.width * 0.85)) {
+	if((alienPosition < (boxPosition)) && (parseInt(alien.style.top) >= topOfBox) &&  (boxDistance <= alien.width * 0.85)) {
 		walkingDirectionRight = false
 		velocityX = -1;
 	}
 }
 
-function boom() {
-
-if((parseInt(alien.style.top) >= topOfBox - 5 )
-&& (boxDistance <= alien.width * 0.85) 
-&& (alienPosition < (boxPosition + box.width))
-&& parseInt(alien.style.top) <= topOfBox + 5){
-	boxes = document.getElementsByClassName("box")
-	boxes[0].src = "boom.png";
-
-	setTimeout(disappear, 3000);
-
-	}
-}
-
-
 function disappear(){
 	boxes = document.getElementsByClassName("box")
 	boxes[0].style.display = "none";
-	boxes[0].style.zIndex = "0";
+	boxes[0].style.zIndex = "-500";
 }
 
 onload = function () {
 
 	walkTimer  = null;
-	
 	jumpTimer = null;
 	stepNumber = 0
 	velocityY = -1;
 	velocityX = 1;
 	walkingDirectionRight = true;
+	doNotMove = true;
 
 	alien = document.images[0];
 
 	alien.onclick = function(){
 	
 		if(walkTimer == null  ){
-			walkTimer = setInterval(move, 15);
+			walkTimer = setInterval(move, 20);
 		}
-		else if(jumpTimer ==null) {
+		else if(jumpTimer == null) {//avoid jumps in the air
 			clearInterval(walkTimer);
 			walkTimer = null;
 		}	
@@ -147,7 +161,7 @@ onload = function () {
 
 	alien.onmouseover = function () {
 		
-		if (jumpTimer == null && walkTimer) {
+		if (jumpTimer == null && walkTimer != null) {
 			jumpTimer = setInterval(Jump, 15);
 		} 
 	}
@@ -158,8 +172,7 @@ onload = function () {
 <body>
 <img src="alien/alienrwalk0.gif" id="x" style="position:absolute; left:0px; top:200px">
 <img class="box" src="box.png" alt="box" width="50px" style="position: absolute; left: 400px; top:235px;">
-<img class="box" src="box.png" alt="box" width="100px" style="position: absolute; left: 600px; top:190px;">
+<img class="box" src="box.png" alt="box" width="100px" style="position: absolute; left: 800px; top:190px;">
 <img src="boom.PNG" alt="boom" width= "150px" style="position: absolute; left:275px; top:180px; display: none;">
-
 </body>
 </html>
